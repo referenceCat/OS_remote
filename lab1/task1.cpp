@@ -280,7 +280,7 @@ void fileAttributes() {
 
     for (auto attribute: allAttributes) {
         if (mask & attribute) {
-            attributesDescriptions.push_back(attributeDescriptonsMap.at(attribute));
+            attributesDescriptions.push_back(attributeDescriptionsMap.at(attribute));
         }
     }
 
@@ -297,7 +297,7 @@ void fileAttributes() {
 
     int counter = 1;
     for (auto attribute: allAttributes) {
-        std::cout << counter++ << ". " << attributeDescriptonsMap.at(attribute) << std::endl;
+        std::cout << counter++ << ". " << attributeDescriptionsMap.at(attribute) << std::endl;
     }
 
     NEW_LINE();

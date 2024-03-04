@@ -31,7 +31,7 @@ constexpr std::array<int, FILE_ATTRIBUTES_NUMBER> allAttributes = {
 //        FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS
 };
 
-std::map<int, std::string> attributeDescriptonsMap = {
+std::map<int, std::string> attributeDescriptionsMap = {
         {FILE_ATTRIBUTE_HIDDEN,              "The file or directory is hidden. It is not included in an ordinary directory listing."},
         {FILE_ATTRIBUTE_SYSTEM,              "A file or directory that the operating system uses a part of, or uses exclusively."},
         {FILE_ATTRIBUTE_DIRECTORY,           "The handle that identifies a directory."},

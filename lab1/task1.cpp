@@ -280,13 +280,49 @@ void fileAttributes() {
 
     for (auto attribute: allAttributes) {
         if (mask & attribute) {
-            attributesDescriptions.push_back(attributeMap.at(attribute));
+            attributesDescriptions.push_back(attributeDescriptonsMap.at(attribute));
         }
     }
 
     for (auto &description: attributesDescriptions) {
         std::cout << description << std::endl;
     }
+
+    NEXT_LINE();
+    std::cout << "Do you want to change file attributes?" << std::endl;
+    bool changeAttributes = yesNoMenu();
+    if (!changeAttributes) return;
+    NEXT_LINE();
+    std::cout << "Possible file attributes:" << std::endl;
+
+
+    int counter = 1;
+    for (auto attribute: allAttributes) {
+        std::cout << counter++ << ". " << attributeDescriptonsMap.at(attribute) << std::endl;
+    }
+
+    NEXT_LINE();
+    std::cout << "Choose file attributes to enable: " << std::endl;
+
+    // source: https://stackoverflow.com/questions/12775920/reading-line-of-integers-into-a-vector
+    std::list<int> enabledAttributesIndexes;
+    int number;
+    std::string line;
+    std::cin >> line;
+    std::istringstream iss(line);
+    while (iss >> number) enabledAttributesIndexes.push_back(number);
+
+    mask = 0;
+    for (auto enabledAttribute: enabledAttributesIndexes) {
+        mask |= allAttributes.at(enabledAttribute - 1);
+    }
+
+    if (!SetFileAttributesA(path.c_str(), mask)) {
+        std::cout << "Could not change attributes." << std::endl;
+        return;
+    }
+    std::cout << "Chosen file attributes successfully enabled." << std::endl;
+
 };
 
 std::string filetimeToHRF(FILETIME filetime) {
@@ -351,14 +387,14 @@ void fileTime() {
 
     std::cout << "Do you want to change file time?" << std::endl;
     bool changeFileTime = yesNoMenu();
-    if (changeFileTime) {
-        std::cout << "Enter time file created/accessed/altered at:" << std::endl;
-        readFileTime(&createTime);
-        readFileTime(&lastAccessTime);
-        readFileTime(&lastWriteTime);
-        SetFileTime(file, &createTime, &lastAccessTime, &lastWriteTime);
-        std::cout << "File time successfully changed." << std::endl;
-    }
+    if (!changeFileTime) return;
+
+    std::cout << "Enter time file created/accessed/altered at:" << std::endl;
+    readFileTime(&createTime);
+    readFileTime(&lastAccessTime);
+    readFileTime(&lastWriteTime);
+    SetFileTime(file, &createTime, &lastAccessTime, &lastWriteTime);
+    std::cout << "File time successfully changed." << std::endl;
 
     CloseHandle(file);
 };
@@ -424,6 +460,8 @@ int mainMenu() {
     }
     return 1;
 }
+
+
 
 int main() {
     while (mainMenu());

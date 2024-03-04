@@ -79,6 +79,24 @@ void newFile() {
     std::cout << "File successfully created." << std::endl;
 };
 
+bool yesNoMenu() {
+    int option = -1;
+    bool result;
+    while (option != 1 && option != 2) {
+        std::cout << "1. Yes" << std::endl;
+        std::cout << "2. No" << std::endl;
+
+        std::cin >> option;
+        if (option == 1) result = true;
+        else if (option == 2) result = false;
+        else {
+            std::cout << "Wrong input. Try again: " << std::endl;
+        }
+    }
+
+    return result;
+}
+
 void copyFile() {
     std::cout << "Enter old file path:" << std::endl;
 
@@ -91,19 +109,7 @@ void copyFile() {
     std::cin >> newPath;
 
     std::cout << "Overwrite existent file if needed?" << std::endl;
-    int option = -1;
-    bool overwrite = false;
-    while (option == 1 || option == 2) {
-        std::cout << "1. Yes" << std::endl;
-        std::cout << "2. No" << std::endl;
-
-        std::cin >> option;
-        if (option == 1) overwrite = true;
-        else if (option == 2) overwrite = false;
-        else {
-            std::cout << "Wrong input. Try again: " << std::endl;
-        }
-    }
+    bool overwrite = yesNoMenu();
 
     if (!CopyFileA(oldPath.c_str(), newPath.c_str(), !overwrite)) {
         std::cout << "Could not copy file." << std::endl;
@@ -123,21 +129,6 @@ void moveFile() {
 
     std::string newPath;
     std::cin >> newPath;
-
-    std::cout << "Overwrite existent file if needed?" << std::endl;
-    int option = -1;
-    bool overwrite = false;
-    while (option == 1 || option == 2) {
-        std::cout << "1. Yes" << std::endl;
-        std::cout << "2. No" << std::endl;
-
-        std::cin >> option;
-        if (option == 1) overwrite = true;
-        else if (option == 2) overwrite = false;
-        else {
-            std::cout << "Wrong input. Try again: " << std::endl;
-        }
-    }
 
     if (!MoveFileA(oldPath.c_str(), newPath.c_str())) {
         std::cout << "Could not move file." << std::endl;

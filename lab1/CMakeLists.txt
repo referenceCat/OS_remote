@@ -1,1 +1,1 @@
-add_executable(lab1_task1 task1.cpp task1.h)
+add_executable(lab1_task1 task1.cpp task1.h data.h)

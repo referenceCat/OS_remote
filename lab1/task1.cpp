@@ -2,22 +2,44 @@
 // Created by referencecat on 04.03.24.
 //
 
+#include <list>
 #include "task1.h"
 #include "iostream"
-#define SEPARATOR(); std::cout << "----------------------------------------------" << std::endl;
-#define EMPTY_LINE(); std::cout << std::endl;
+#define SEPARATOR(); std::cout << "-------------------------------------------------------------------------" << std::endl;
+#define NEXT_LINE(); std::cout << std::endl;
+#define DRIVES_NAMES_BUFFER_SIZE 1000
+#define DRIVES_NAMES_MAX 100
+#define DRIVE_VOLUME_NAME_BUFFER_SIZE 256
+#define DRIVE_FILESYSTEM_NAME_BUFFER_SIZE 256
 
-struct Directory {
 
-};
+// source: https://gist.github.com/dgoguerra/7194777
+// only for this function
+static const char *humanSize(uint64_t bytes)
+{
+    char *suffix[] = {"B", "KB", "MB", "GB", "TB"};
+    char length = sizeof(suffix) / sizeof(suffix[0]);
 
-void printCurrentDir() {};
+    int i = 0;
+    double dblBytes = bytes;
 
-void changeCurrentDir() {};
+    if (bytes > 1024) {
+        for (i = 0; (bytes / 1024) > 0 && i<length-1; i++, bytes /= 1024)
+            dblBytes = bytes / 1024.0;
+    }
 
-void goToParentDir() {};
+    static char output[200];
+    sprintf(output, "%.02lf %s", dblBytes, suffix[i]);
+    return output;
+}
 
-void printCurrentDirInfo() {};
+std::string humanSizeString(uint64_t bytes) {
+    std::string result = humanSize(bytes);
+    return result;
+}
+
+
+
 
 void newDir() {};
 
@@ -29,28 +51,154 @@ void copyFile() {};
 
 void moveFile() {};
 
-void printFileInfo() {};
+void drivesInfo() {
+    char buffer[DRIVES_NAMES_BUFFER_SIZE];
+    LPTSTR buffer_ptr = buffer;
+    DWORD bufferSize = DRIVES_NAMES_BUFFER_SIZE;
+    std::list<char*> drivesNames;
+    assert(DRIVES_NAMES_BUFFER_SIZE > GetLogicalDriveStrings(bufferSize, buffer_ptr));
 
-void printDrivesList() {};
+    if (buffer[0] == '\0') {
+        std::cout << "Could not find any logical drives." << std::endl;
+        return;
+    }
+    drivesNames.insert(drivesNames.end(), buffer);
+    for (int cur = 0; cur < DRIVES_NAMES_BUFFER_SIZE - 1; cur++) {
+        if (buffer[cur] == '\0') {
+            if (buffer[cur + 1] == '\0') break;
+            else drivesNames.insert(drivesNames.end(), buffer + cur + 1);
+        }
+    }
+    NEXT_LINE();
+    std::cout << "List of logical drives:" << std::endl;
 
-void driveInfo() {};
+    int counter = 0;
+    for (char* driveName: drivesNames) {
+        std::cout << ++counter << ". "<< driveName << std::endl;
+    }
+    NEXT_LINE();
+    int option;
+    std::cout << "Enter number of drive or 0 to go to main menu: ";
+    std::cin >> option;
+
+    if (option == 0) return;
+
+    while (option - 1 > counter) {
+        std::cout << "Wrong input. Try again: " << std::endl;
+        std::cin >> option;
+    }
+
+    if (option == 0) return;
+    NEXT_LINE();
+
+    auto driveName = drivesNames.front();
+    std::advance(driveName, option - 1);
+    auto type = GetDriveTypeA(driveName);
+
+    std::cout << "Type: ";
+    switch (type) {
+        case DRIVE_NO_ROOT_DIR:
+            std::cout << "NO ROOT DIR";
+            break;
+        case DRIVE_REMOVABLE:
+            std::cout << "REMOVABLE";
+            break;
+        case DRIVE_FIXED:
+            std::cout << "FIXED";
+            break;
+        case DRIVE_REMOTE:
+            std::cout << "REMOTE";
+            break;
+        case DRIVE_CDROM:
+            std::cout << "CDROM";
+            break;
+        case DRIVE_RAMDISK:
+            std::cout << "RAMDISK";
+            break;
+
+            case DRIVE_UNKNOWN: default:
+            std::cout << "UNKNOWN";
+            break;
+    }
+
+    NEXT_LINE();
+    NEXT_LINE();
+
+    char VolumeNameBuffer[DRIVE_VOLUME_NAME_BUFFER_SIZE];
+    char FileSystemNameBuffer[DRIVE_FILESYSTEM_NAME_BUFFER_SIZE];
+    unsigned long VolumeSerialNumber;
+    unsigned long systemFlags;
+
+    BOOL GetVolumeInformationFlag = GetVolumeInformationA(
+            driveName,
+            VolumeNameBuffer,
+            DRIVE_VOLUME_NAME_BUFFER_SIZE,
+            &VolumeSerialNumber,
+            nullptr,
+            &systemFlags,
+            FileSystemNameBuffer,
+            DRIVE_FILESYSTEM_NAME_BUFFER_SIZE);
+
+    if (GetVolumeInformationFlag != 0) {
+        if (VolumeNameBuffer[0] != '\0') std::cout << "Volume: " << VolumeNameBuffer <<std:: endl;
+        std::cout << "Volume Serial Number: " << VolumeSerialNumber << std::endl;
+        if (FileSystemNameBuffer[0] != '\0') std::cout << "File System: " << FileSystemNameBuffer << std::endl;
+    } else
+        std::cout << "Could not get information about this drive." << std::endl;
+
+    NEXT_LINE();
+
+    std::cout << "System flags: " << std::endl;
+    for (auto& flag: systemFlagsMap) {
+        if (flag.first & systemFlags) {
+            std::cout << flag.second << std::endl;
+        }
+    }
+
+    NEXT_LINE();
+
+    ULARGE_INTEGER FreeBytesAvailable = {0};
+    ULARGE_INTEGER TotalNumberOfBytes = {0};
+    ULARGE_INTEGER TotalNumberOfFreeBytes = {0};
+
+    BOOL GetDiskFreeSpaceFlag = GetDiskFreeSpaceExA(
+            driveName,
+            &FreeBytesAvailable,
+            &TotalNumberOfBytes,
+            &TotalNumberOfFreeBytes
+    );
+
+    if (GetDiskFreeSpaceFlag != 0) {
+        auto availableSpace = humanSizeString(FreeBytesAvailable.QuadPart);
+        auto totalSpace = humanSizeString(TotalNumberOfBytes.QuadPart);
+        auto totalFreeSpace =humanSizeString( TotalNumberOfFreeBytes.QuadPart);
+
+        std::cout << "Available space: " << availableSpace << std::endl;
+        std::cout << "Total space: " << availableSpace << std::endl;
+        std::cout << "Total free space: " << availableSpace << std::endl;
+    } else
+        std::cout << "Could not get drive space info." << std::endl;
+
+
+};
+
 
 int mainMenu() {
     SEPARATOR();
     std::cout << "Options: " << std::endl;
     std::cout << "0. Quit" << std::endl;
-    std::cout << "1. Current directory" << std::endl;
-    std::cout << "2. Change current directory" << std::endl;
-    std::cout << "3. Go to parent directory" << std::endl;
-    std::cout << "4. Current directory info" << std::endl;
-    std::cout << "5. New folder" << std::endl;
-    std::cout << "6. Delete folder" << std::endl;
-    std::cout << "7. New file" << std::endl;
-    std::cout << "8. Copy file to current directory" << std::endl;
-    std::cout << "9. Move file to another directory" << std::endl;
-    std::cout << "10. File info" << std::endl;
-    std::cout << "11. Data drives info" << std::endl;
-    EMPTY_LINE();
+    std::cout << "1. Data drives info" << std::endl;
+    std::cout << "2. New folder" << std::endl;
+    std::cout << "3. Delete folder" << std::endl;
+    std::cout << "4. New file" << std::endl;
+    std::cout << "5. Copy file" << std::endl;
+    std::cout << "6. Move file" << std::endl;
+    std::cout << "7. File attributes" << std::endl;
+    std::cout << "8. Change file attributes" << std::endl;
+    std::cout << "9. File time" << std::endl;
+    std::cout << "10. Change file time" << std::endl;
+
+    NEXT_LINE();
     std::cout << "Choose option: ";
 
     int option;
@@ -61,52 +209,31 @@ int mainMenu() {
             return 0;
 
         case 1:
-            printCurrentDir();
+            drivesInfo();
             break;
 
         case 2:
-            changeCurrentDir();
-            break;
-
-        case 3:
-            goToParentDir();
-            break;
-
-        case 4:
-            printCurrentDirInfo();
-            break;
-
-        case 5:
             newDir();
             break;
 
-        case 6:
+        case 3:
             deleteDir();
             break;
 
-        case 7:
+        case 4:
             newFile();
             break;
 
-        case 8:
+        case 5:
             copyFile();
             break;
 
-        case 9:
+        case 6:
             moveFile();
             break;
 
-        case 10:
-            printFileInfo();
-            break;
-
-        case 11:
-            printFileInfo();
-            break;
-
-        case 12:
-            printDrivesList();
-            driveInfo();
+            case 7: case 8: case 9: case 10:
+                // todo
             break;
 
         default:

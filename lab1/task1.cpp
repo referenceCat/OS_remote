@@ -31,6 +31,10 @@ void moveFile() {};
 
 void printFileInfo() {};
 
+void printDrivesList() {};
+
+void driveInfo() {};
+
 int mainMenu() {
     SEPARATOR();
     std::cout << "Options: " << std::endl;
@@ -45,6 +49,7 @@ int mainMenu() {
     std::cout << "8. Copy file to current directory" << std::endl;
     std::cout << "9. Move file to another directory" << std::endl;
     std::cout << "10. File info" << std::endl;
+    std::cout << "11. Data drives info" << std::endl;
     EMPTY_LINE();
     std::cout << "Choose option: ";
 
@@ -93,6 +98,15 @@ int mainMenu() {
 
         case 10:
             printFileInfo();
+            break;
+
+        case 11:
+            printFileInfo();
+            break;
+
+        case 12:
+            printDrivesList();
+            driveInfo();
             break;
 
         default:

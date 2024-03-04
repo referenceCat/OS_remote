@@ -8,6 +8,7 @@
 #include <iomanip>
 #include "task1.h"
 #include "iostream"
+
 #define SEPARATOR(); std::cout << "-------------------------------------------------------------------------" << std::endl;
 #define NEXT_LINE(); std::cout << std::endl;
 #define DRIVES_NAMES_BUFFER_SIZE 1000
@@ -15,11 +16,8 @@
 #define DRIVE_VOLUME_NAME_BUFFER_SIZE 256
 #define DRIVE_FILESYSTEM_NAME_BUFFER_SIZE 256
 
-
-// source: https://gist.github.com/dgoguerra/7194777
-// only for this function
-static const char *humanSize(uint64_t bytes)
-{
+// function *stolen* from https://gist.github.com/dgoguerra/7194777
+static const char *humanSize(uint64_t bytes) {
     char *suffix[] = {"B", "KB", "MB", "GB", "TB"};
     char length = sizeof(suffix) / sizeof(suffix[0]);
 
@@ -27,7 +25,7 @@ static const char *humanSize(uint64_t bytes)
     double dblBytes = bytes;
 
     if (bytes > 1024) {
-        for (i = 0; (bytes / 1024) > 0 && i<length-1; i++, bytes /= 1024)
+        for (i = 0; (bytes / 1024) > 0 && i < length - 1; i++, bytes /= 1024)
             dblBytes = bytes / 1024.0;
     }
 
@@ -144,7 +142,7 @@ void drivesInfo() {
     char buffer[DRIVES_NAMES_BUFFER_SIZE];
     LPTSTR buffer_ptr = buffer;
     DWORD bufferSize = DRIVES_NAMES_BUFFER_SIZE;
-    std::list<char*> drivesNames;
+    std::list<char *> drivesNames;
     assert(DRIVES_NAMES_BUFFER_SIZE > GetLogicalDriveStrings(bufferSize, buffer_ptr));
 
     if (buffer[0] == '\0') {
@@ -157,15 +155,13 @@ void drivesInfo() {
             if (buffer[cur + 1] == '\0') break;
             else drivesNames.insert(drivesNames.end(), buffer + cur + 1);
         }
-    }
-    NEXT_LINE();
+    }NEXT_LINE();
     std::cout << "List of logical drives:" << std::endl;
 
     int counter = 0;
-    for (char* driveName: drivesNames) {
-        std::cout << ++counter << ". "<< driveName << std::endl;
-    }
-    NEXT_LINE();
+    for (char *driveName: drivesNames) {
+        std::cout << ++counter << ". " << driveName << std::endl;
+    }NEXT_LINE();
     int option;
     std::cout << "Enter number of drive or 0 to go to main menu: ";
     std::cin >> option;
@@ -177,8 +173,7 @@ void drivesInfo() {
         std::cin >> option;
     }
 
-    if (option == 0) return;
-    NEXT_LINE();
+    if (option == 0) return;NEXT_LINE();
 
     auto driveName = drivesNames.front();
     std::advance(driveName, option - 1);
@@ -205,13 +200,13 @@ void drivesInfo() {
             std::cout << "RAMDISK";
             break;
 
-            case DRIVE_UNKNOWN: default:
+        case DRIVE_UNKNOWN:
+        default:
             std::cout << "UNKNOWN";
             break;
     }
 
-    NEXT_LINE();
-    NEXT_LINE();
+    NEXT_LINE();NEXT_LINE();
 
     char VolumeNameBuffer[DRIVE_VOLUME_NAME_BUFFER_SIZE];
     char FileSystemNameBuffer[DRIVE_FILESYSTEM_NAME_BUFFER_SIZE];
@@ -229,7 +224,7 @@ void drivesInfo() {
             DRIVE_FILESYSTEM_NAME_BUFFER_SIZE);
 
     if (GetVolumeInformationFlag != 0) {
-        if (VolumeNameBuffer[0] != '\0') std::cout << "Volume: " << VolumeNameBuffer <<std:: endl;
+        if (VolumeNameBuffer[0] != '\0') std::cout << "Volume: " << VolumeNameBuffer << std::endl;
         std::cout << "Volume Serial Number: " << VolumeSerialNumber << std::endl;
         if (FileSystemNameBuffer[0] != '\0') std::cout << "File System: " << FileSystemNameBuffer << std::endl;
     } else
@@ -238,7 +233,7 @@ void drivesInfo() {
     NEXT_LINE();
 
     std::cout << "System flags: " << std::endl;
-    for (auto& flag: systemFlagsMap) {
+    for (auto &flag: systemFlagsMap) {
         if (flag.first & systemFlags) {
             std::cout << flag.second << std::endl;
         }
@@ -260,7 +255,7 @@ void drivesInfo() {
     if (GetDiskFreeSpaceFlag != 0) {
         auto availableSpace = humanSizeString(FreeBytesAvailable.QuadPart);
         auto totalSpace = humanSizeString(TotalNumberOfBytes.QuadPart);
-        auto totalFreeSpace =humanSizeString( TotalNumberOfFreeBytes.QuadPart);
+        auto totalFreeSpace = humanSizeString(TotalNumberOfFreeBytes.QuadPart);
 
         std::cout << "Available space: " << availableSpace << std::endl;
         std::cout << "Total space: " << availableSpace << std::endl;
@@ -299,12 +294,12 @@ std::string filetimeToHRF(FILETIME filetime) {
     FileTimeToSystemTime(&filetime, &systemTime);
     std::stringstream result;
     result << systemTime.wDay << "." << systemTime.wMonth << "." << systemTime.wYear << " "
-                         << systemTime.wHour + 3 << ":" << systemTime.wMinute << std::endl;
+           << systemTime.wHour + 3 << ":" << systemTime.wMinute << std::endl;
     return result.str();
 
 }
 
-void readFileTime(FILETIME* filetime) {
+void readFileTime(FILETIME *filetime) {
     std::cout << "(dd.mm.yyyy-H:M): ";
     std::string input;
     std::cin >> input;
@@ -332,12 +327,12 @@ void fileTime() {
     FILETIME createTime, lastAccessTime, lastWriteTime;
 
     auto file = CreateFile(path.c_str(),
-                      GENERIC_READ | FILE_WRITE_ATTRIBUTES,
-                      FILE_SHARE_READ | FILE_SHARE_WRITE,
-                      nullptr,
-                      OPEN_EXISTING,
-                      FILE_ATTRIBUTE_NORMAL,
-                      nullptr);
+                           GENERIC_READ | FILE_WRITE_ATTRIBUTES,
+                           FILE_SHARE_READ | FILE_SHARE_WRITE,
+                           nullptr,
+                           OPEN_EXISTING,
+                           FILE_ATTRIBUTE_NORMAL,
+                           nullptr);
 
     if (file == INVALID_HANDLE_VALUE) {
         std::cout << "Failed to open file." << std::endl;
@@ -361,7 +356,7 @@ void fileTime() {
         readFileTime(&createTime);
         readFileTime(&lastAccessTime);
         readFileTime(&lastWriteTime);
-        SetFileTime(file,&createTime,&lastAccessTime,&lastWriteTime);
+        SetFileTime(file, &createTime, &lastAccessTime, &lastWriteTime);
         std::cout << "File time successfully changed." << std::endl;
     }
 

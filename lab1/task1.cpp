@@ -461,9 +461,22 @@ int mainMenu() {
     return 1;
 }
 
-
+void logo() {
+    NEXT_LINE();
+    NEXT_LINE();
+    std::cout<<R"( ___       ________  ________     )" << std::endl;
+    std::cout<<R"(|\  \     |\   __  \|\   __  \    )" << std::endl;
+    std::cout<<R"(\ \  \    \ \  \|\  \ \  \|\ /_   )" << std::endl;
+    std::cout<<R"( \ \  \    \ \   __  \ \   __  \  )" << std::endl;
+    std::cout<<R"(  \ \  \____\ \  \ \  \ \  \|\  \ )" << std::endl;
+    std::cout<<R"(   \ \_______\ \__\ \__\ \_______\)" << std::endl;
+    std::cout<<R"(    \|_______|\|__|\|__|\|_______|)" << std::endl;
+    NEXT_LINE();
+    NEXT_LINE();
+}
 
 int main() {
+    logo();
     while (mainMenu());
     return 0;
 }

@@ -9,8 +9,8 @@
 #include "task1.h"
 #include "iostream"
 
-#define SEPARATOR(); std::cout << "-------------------------------------------------------------------------" << std::endl;
-#define NEXT_LINE(); std::cout << std::endl;
+#define SEPARATOR(); std::cout << "-------MAIN--MENU---------------------------------------------------" << std::endl;
+#define NEW_LINE(); std::cout << std::endl;
 #define DRIVES_NAMES_BUFFER_SIZE 1000
 #define DRIVES_NAMES_MAX 100
 #define DRIVE_VOLUME_NAME_BUFFER_SIZE 256
@@ -155,13 +155,13 @@ void drivesInfo() {
             if (buffer[cur + 1] == '\0') break;
             else drivesNames.insert(drivesNames.end(), buffer + cur + 1);
         }
-    }NEXT_LINE();
+    }NEW_LINE();
     std::cout << "List of logical drives:" << std::endl;
 
     int counter = 0;
     for (char *driveName: drivesNames) {
         std::cout << ++counter << ". " << driveName << std::endl;
-    }NEXT_LINE();
+    }NEW_LINE();
     int option;
     std::cout << "Enter number of drive or 0 to go to main menu: ";
     std::cin >> option;
@@ -173,7 +173,7 @@ void drivesInfo() {
         std::cin >> option;
     }
 
-    if (option == 0) return;NEXT_LINE();
+    if (option == 0) return;NEW_LINE();
 
     auto driveName = drivesNames.front();
     std::advance(driveName, option - 1);
@@ -206,7 +206,7 @@ void drivesInfo() {
             break;
     }
 
-    NEXT_LINE();NEXT_LINE();
+    NEW_LINE();NEW_LINE();
 
     char VolumeNameBuffer[DRIVE_VOLUME_NAME_BUFFER_SIZE];
     char FileSystemNameBuffer[DRIVE_FILESYSTEM_NAME_BUFFER_SIZE];
@@ -230,7 +230,7 @@ void drivesInfo() {
     } else
         std::cout << "Could not get information about this drive." << std::endl;
 
-    NEXT_LINE();
+    NEW_LINE();
 
     std::cout << "System flags: " << std::endl;
     for (auto &flag: systemFlagsMap) {
@@ -239,7 +239,7 @@ void drivesInfo() {
         }
     }
 
-    NEXT_LINE();
+    NEW_LINE();
 
     ULARGE_INTEGER FreeBytesAvailable = {0};
     ULARGE_INTEGER TotalNumberOfBytes = {0};
@@ -288,11 +288,10 @@ void fileAttributes() {
         std::cout << description << std::endl;
     }
 
-    NEXT_LINE();
+    NEW_LINE();
     std::cout << "Do you want to change file attributes?" << std::endl;
     bool changeAttributes = yesNoMenu();
-    if (!changeAttributes) return;
-    NEXT_LINE();
+    if (!changeAttributes) return;NEW_LINE();
     std::cout << "Possible file attributes:" << std::endl;
 
 
@@ -301,7 +300,7 @@ void fileAttributes() {
         std::cout << counter++ << ". " << attributeDescriptonsMap.at(attribute) << std::endl;
     }
 
-    NEXT_LINE();
+    NEW_LINE();
     std::cout << "Choose file attributes to enable: " << std::endl;
 
     // source: https://stackoverflow.com/questions/12775920/reading-line-of-integers-into-a-vector
@@ -400,7 +399,7 @@ void fileTime() {
 };
 
 int mainMenu() {
-    SEPARATOR();
+    NEW_LINE();SEPARATOR();
     std::cout << "Options: " << std::endl;
     std::cout << "0. Quit" << std::endl;
     std::cout << "1. Data drives info" << std::endl;
@@ -412,7 +411,7 @@ int mainMenu() {
     std::cout << "7. File attributes" << std::endl;
     std::cout << "8. File time" << std::endl;
 
-    NEXT_LINE();
+    NEW_LINE();
     std::cout << "Choose option: ";
 
     int option;
@@ -462,17 +461,14 @@ int mainMenu() {
 }
 
 void logo() {
-    NEXT_LINE();
-    NEXT_LINE();
-    std::cout<<R"( ___       ________  ________     )" << std::endl;
-    std::cout<<R"(|\  \     |\   __  \|\   __  \    )" << std::endl;
-    std::cout<<R"(\ \  \    \ \  \|\  \ \  \|\ /_   )" << std::endl;
-    std::cout<<R"( \ \  \    \ \   __  \ \   __  \  )" << std::endl;
-    std::cout<<R"(  \ \  \____\ \  \ \  \ \  \|\  \ )" << std::endl;
-    std::cout<<R"(   \ \_______\ \__\ \__\ \_______\)" << std::endl;
-    std::cout<<R"(    \|_______|\|__|\|__|\|_______|)" << std::endl;
-    NEXT_LINE();
-    NEXT_LINE();
+    NEW_LINE();NEW_LINE();
+    std::cout << R"( ___       ________  ________     )" << std::endl;
+    std::cout << R"(|\  \     |\   __  \|\   __  \    )" << std::endl;
+    std::cout << R"(\ \  \    \ \  \|\  \ \  \|\ /_   )" << std::endl;
+    std::cout << R"( \ \  \    \ \   __  \ \   __  \  )" << std::endl;
+    std::cout << R"(  \ \  \____\ \  \ \  \ \  \|\  \ )" << std::endl;
+    std::cout << R"(   \ \_______\ \__\ \__\ \_______\)" << std::endl;
+    std::cout << R"(    \|_______|\|__|\|__|\|_______|)" << std::endl;NEW_LINE();NEW_LINE();
 }
 
 int main() {

@@ -3,6 +3,9 @@
 //
 
 #include <list>
+#include <sstream>
+#include <chrono>
+#include <iomanip>
 #include "task1.h"
 #include "iostream"
 #define SEPARATOR(); std::cout << "-------------------------------------------------------------------------" << std::endl;
@@ -275,13 +278,13 @@ void fileAttributes() {
 
     std::list<std::string> attributesDescriptions;
 
-    auto attributesMask = GetFileAttributesA(path.c_str());
-    if (attributesMask == INVALID_FILE_ATTRIBUTES) {
+    auto mask = GetFileAttributesA(path.c_str());
+    if (mask == INVALID_FILE_ATTRIBUTES) {
         std::cout << "Invalid file attributesDescriptions!." << std::endl;
     }
 
     for (auto attribute: allAttributes) {
-        if (attributesMask & attribute) {
+        if (mask & attribute) {
             attributesDescriptions.push_back(attributeMap.at(attribute));
         }
     }
@@ -291,7 +294,79 @@ void fileAttributes() {
     }
 };
 
-void fileTime() {};
+std::string filetimeToHRF(FILETIME filetime) {
+    SYSTEMTIME systemTime;
+    FileTimeToSystemTime(&filetime, &systemTime);
+    std::stringstream result;
+    result << systemTime.wDay << "." << systemTime.wMonth << "." << systemTime.wYear << " "
+                         << systemTime.wHour + 3 << ":" << systemTime.wMinute << std::endl;
+    return result.str();
+
+}
+
+void readFileTime(FILETIME* filetime) {
+    std::cout << "(dd.mm.yyyy-H:M): ";
+    std::string input;
+    std::cin >> input;
+    std::tm tm = {};
+    std::stringstream stream(input);
+    stream >> std::get_time(&tm, "%d.%m.%Y-%H:%M");
+    std::mktime(&tm);
+
+    SYSTEMTIME systemTime;
+    GetSystemTime(&systemTime);
+    systemTime.wDay = tm.tm_mday;
+    systemTime.wMonth = tm.tm_mon + 1;
+    systemTime.wYear = tm.tm_year + 1900;
+    systemTime.wHour = tm.tm_hour;
+    systemTime.wMinute = tm.tm_min;
+
+    SystemTimeToFileTime(&systemTime, filetime);
+}
+
+void fileTime() {
+    std::string path;
+    std::cout << "Enter file path: ";
+    std::cin >> path;
+
+    FILETIME createTime, lastAccessTime, lastWriteTime;
+
+    auto file = CreateFile(path.c_str(),
+                      GENERIC_READ | FILE_WRITE_ATTRIBUTES,
+                      FILE_SHARE_READ | FILE_SHARE_WRITE,
+                      nullptr,
+                      OPEN_EXISTING,
+                      FILE_ATTRIBUTE_NORMAL,
+                      nullptr);
+
+    if (file == INVALID_HANDLE_VALUE) {
+        std::cout << "Failed to open file." << std::endl;
+        return;
+    }
+
+    if (!GetFileTime(file, &createTime, &lastAccessTime, &lastWriteTime)) {
+        std::cout << "Failed to get file time." << std::endl;
+        CloseHandle(file);
+        return;
+    }
+
+    std::cout << "File created at: " << filetimeToHRF(createTime);
+    std::cout << "File accessed at: " << filetimeToHRF(lastAccessTime);
+    std::cout << "File altered at: " << filetimeToHRF(lastWriteTime);
+
+    std::cout << "Do you want to change file time?" << std::endl;
+    bool changeFileTime = yesNoMenu();
+    if (changeFileTime) {
+        std::cout << "Enter time file created/accessed/altered at:" << std::endl;
+        readFileTime(&createTime);
+        readFileTime(&lastAccessTime);
+        readFileTime(&lastWriteTime);
+        SetFileTime(file,&createTime,&lastAccessTime,&lastWriteTime);
+        std::cout << "File time successfully changed." << std::endl;
+    }
+
+    CloseHandle(file);
+};
 
 int mainMenu() {
     SEPARATOR();
@@ -356,9 +431,6 @@ int mainMenu() {
 }
 
 int main() {
-    bool running = true;
-    while (running) {
-        running = mainMenu();
-    }
+    while (mainMenu());
     return 0;
 }

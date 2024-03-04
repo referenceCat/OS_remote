@@ -38,18 +38,113 @@ std::string humanSizeString(uint64_t bytes) {
     return result;
 }
 
+void newDir() {
+    std::cout << "Enter directory path: ";
+    std::string path;
+    std::cin >> path;
+    if (!CreateDirectoryA(path.c_str(), nullptr)) {
+        std::cout << "Could not create new directory." << std::endl;
+        return;
+    }
+    std::cout << "Directory successfully created." << std::endl;
+}
 
+void deleteDir() {
+    std::cout << "Enter directory path: ";
+    std::string path;
+    std::cin >> path;
+    if (!RemoveDirectoryA(path.c_str())) {
+        std::cout << "Could not delete directory." << std::endl;
+        return;
+    }
+    std::cout << "Directory successfully deleted." << std::endl;
+}
 
+void newFile() {
+    std::cout << "Enter file path: ";
 
-void newDir() {};
+    std::string path;
+    std::cin >> path;
+    HANDLE f = CreateFileA(path.c_str(),
+                           GENERIC_READ | GENERIC_WRITE,
+                           0, nullptr,
+                           CREATE_NEW,
+                           FILE_ATTRIBUTE_NORMAL,
+                           nullptr);
+    if (f == nullptr || !CloseHandle(f)) {
+        std::cout << "Could not create new file." << std::endl;
+        return;
+    }
 
-void deleteDir() {};
+    std::cout << "File successfully created." << std::endl;
+};
 
-void newFile() {};
+void copyFile() {
+    std::cout << "Enter old file path:" << std::endl;
 
-void copyFile() {};
+    std::string oldPath;
+    std::cin >> oldPath;
 
-void moveFile() {};
+    std::cout << "Enter new file path: " << std::endl;
+
+    std::string newPath;
+    std::cin >> newPath;
+
+    std::cout << "Overwrite existent file if needed?" << std::endl;
+    int option = -1;
+    bool overwrite = false;
+    while (option == 1 || option == 2) {
+        std::cout << "1. Yes" << std::endl;
+        std::cout << "2. No" << std::endl;
+
+        std::cin >> option;
+        if (option == 1) overwrite = true;
+        else if (option == 2) overwrite = false;
+        else {
+            std::cout << "Wrong input. Try again: " << std::endl;
+        }
+    }
+
+    if (!CopyFileA(oldPath.c_str(), newPath.c_str(), !overwrite)) {
+        std::cout << "Could not copy file." << std::endl;
+        return;
+    }
+
+    std::cout << "File successfully copied." << std::endl;
+};
+
+void moveFile() {
+    std::cout << "Enter old file path:" << std::endl;
+
+    std::string oldPath;
+    std::cin >> oldPath;
+
+    std::cout << "Enter new file path: " << std::endl;
+
+    std::string newPath;
+    std::cin >> newPath;
+
+    std::cout << "Overwrite existent file if needed?" << std::endl;
+    int option = -1;
+    bool overwrite = false;
+    while (option == 1 || option == 2) {
+        std::cout << "1. Yes" << std::endl;
+        std::cout << "2. No" << std::endl;
+
+        std::cin >> option;
+        if (option == 1) overwrite = true;
+        else if (option == 2) overwrite = false;
+        else {
+            std::cout << "Wrong input. Try again: " << std::endl;
+        }
+    }
+
+    if (!MoveFileA(oldPath.c_str(), newPath.c_str())) {
+        std::cout << "Could not move file." << std::endl;
+        return;
+    }
+    std::cout << "File successfully moved." << std::endl;
+};
 
 void drivesInfo() {
     char buffer[DRIVES_NAMES_BUFFER_SIZE];
@@ -182,6 +277,30 @@ void drivesInfo() {
 
 };
 
+void fileAttributes() {
+    std::cout << "Enter file path: ";
+    std::string path;
+    std::cin >> path;
+
+    std::list<std::string> attributesDescriptions;
+
+    auto attributesMask = GetFileAttributesA(path.c_str());
+    if (attributesMask == INVALID_FILE_ATTRIBUTES) {
+        std::cout << "Invalid file attributesDescriptions!." << std::endl;
+    }
+
+    for (auto attribute: allAttributes) {
+        if (attributesMask & attribute) {
+            attributesDescriptions.push_back(attributeMap.at(attribute));
+        }
+    }
+
+    for (auto &description: attributesDescriptions) {
+        std::cout << description << std::endl;
+    }
+};
+
+void fileTime() {};
 
 int mainMenu() {
     SEPARATOR();
@@ -194,9 +313,7 @@ int mainMenu() {
     std::cout << "5. Copy file" << std::endl;
     std::cout << "6. Move file" << std::endl;
     std::cout << "7. File attributes" << std::endl;
-    std::cout << "8. Change file attributes" << std::endl;
-    std::cout << "9. File time" << std::endl;
-    std::cout << "10. Change file time" << std::endl;
+    std::cout << "8. File time" << std::endl;
 
     NEXT_LINE();
     std::cout << "Choose option: ";
@@ -232,8 +349,12 @@ int mainMenu() {
             moveFile();
             break;
 
-            case 7: case 8: case 9: case 10:
-                // todo
+        case 7:
+            fileAttributes();
+            break;
+
+        case 8:
+            fileTime();
             break;
 
         default:

@@ -277,7 +277,7 @@ void move_file(std::vector<std::string> dir){
             DWORD file_exist = GetFileAttributes(vector_to_STR(dir, 0).c_str());
             if(file_exist != INVALID_FILE_ATTRIBUTES){
                 std::cout << "file already exist in current path" << std::endl;
-                std::cout << "0 - exit from.txt moving process" << std::endl;
+                std::cout << "0 - exit small_amogus_file.txt moving process" << std::endl;
                 std::cout << "1 - rename moved file" << std::endl;
                 std::cin>> command;
                 while(command != 1 && command != 0){
@@ -364,13 +364,13 @@ void file_information(std::vector<std::string> dir){
     std::cout << "Last access time: " << lat.wDay << "-" << lat.wMonth << '-' << lat.wYear <<"  " << lat.wHour << ":" << lat.wMinute << ":" << lat.wSecond << std::endl;
     std::cout << "Last write time: " << lwt.wDay << "-" << lwt.wMonth << '-' << lwt.wYear <<"  " << lwt.wHour << ":" << lwt.wMinute << ":" << lwt.wSecond << std::endl;
 
-    std::cout << "0 - exit from.txt file attributes" << std::endl;
+    std::cout << "0 - exit small_amogus_file.txt file attributes" << std::endl;
     std::cout << "1 - edit file attributes" << std::endl;
 
     int command;
     std::cin >> command;
     if(command == 1){
-        std::cout << "0) exit from.txt attributes editing" << std::endl;
+        std::cout << "0) exit small_amogus_file.txt attributes editing" << std::endl;
         std::cout << "1) FILE_ATTRIBUTE_ARCHIVE" << std::endl;
         std::cout << "2) FILE_ATTRIBUTE_HIDDEN" << std::endl;
         std::cout << "3) FILE_ATTRIBUTE_NORMAL" << std::endl;

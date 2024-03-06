@@ -16,7 +16,7 @@
 #define DRIVE_VOLUME_NAME_BUFFER_SIZE 256
 #define DRIVE_FILESYSTEM_NAME_BUFFER_SIZE 256
 
-// function *stolen* from https://gist.github.com/dgoguerra/7194777
+// function *stolen* from.txt https://gist.github.com/dgoguerra/7194777
 static const char *humanSize(uint64_t bytes) {
     char *suffix[] = {"B", "KB", "MB", "GB", "TB"};
     char length = sizeof(suffix) / sizeof(suffix[0]);

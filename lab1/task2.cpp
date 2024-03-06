@@ -2,6 +2,8 @@
 // Created by referencecat on 05.03.24.
 //
 
+#include <chrono>
+#include <iomanip>
 #include "task2.h"
 #define __GNU_SOURCE
 
@@ -17,7 +19,8 @@ int fileDescriptorTo;
 unsigned long long fileSize;
 unsigned blockSize;
 aio_operation* operations;
-int workingOperations;
+int workingOperations = 0;
+bool initFinished = false;
 
 void aio_completion_handler(sigval_t sigval) {
     auto *aio_op = (struct aio_operation *)sigval.sival_ptr;
@@ -29,7 +32,7 @@ void aio_completion_handler(sigval_t sigval) {
         aio_write(&aio_op->controlBlock);
     } else {
         aio_op->controlBlock.aio_offset += aio_op->controlBlock.aio_nbytes;
-        if (aio_op->controlBlock.aio_offset >= fileSize) {
+        if (aio_op->controlBlock.aio_offset >= fileSize && initFinished) {
             delete aio_op->buffer;
             aio_op->done = true;
             workingOperations--;
@@ -52,7 +55,7 @@ void initCopy(std::string pathFrom, std::string pathTo, int operationsNumber = 1
     fileSize = statBuffer.st_size;
     blockSize = statBuffer.st_blksize * blockSizeMultiplayer;
     operations = new aio_operation[operationsNumber];
-    workingOperations = operationsNumber;
+    // workingOperations = operationsNumber;
 
     for (int i = 0; i < operationsNumber; i++) {
         operations[i].isWriteOperation = 1;
@@ -63,15 +66,19 @@ void initCopy(std::string pathFrom, std::string pathTo, int operationsNumber = 1
         operations[i].controlBlock.aio_buf = operations[i].buffer;
         operations[i].controlBlock.aio_nbytes = blockSize;
         operations[i].controlBlock.aio_offset = i * blockSize;
-        if (operations[i].controlBlock.aio_offset > fileSize) break; // stops creating new operations if existent are enough
+        if (operations[i].controlBlock.aio_offset > fileSize) {
+            break; // stops creating new operations if existent are enough
+        }
         operations[i].controlBlock.aio_sigevent.sigev_notify = SIGEV_THREAD;
         operations[i].controlBlock.aio_sigevent.sigev_notify_function = aio_completion_handler;
         operations[i].controlBlock.aio_sigevent.sigev_value.sival_ptr = &operations[i];
         operations[i].done = false;
+        workingOperations++;
 
         // initialisation of aio operation
         aio_read(&operations[i].controlBlock);
     }
+    initFinished = true;
 
 }
 
@@ -97,8 +104,12 @@ int main(int argc, char **argv) { // args are "from" filepath, "to" filepath, bl
     int operations = atoi(argv[4]); // operations number
 
 
+    auto start = std::chrono::high_resolution_clock::now();
     initCopy(oldFilePath, newFilePath, operations, blockSizeMultiplayer);
     // should replace it with signal handler but idk how
     while (workingOperations) { sleep(0); } // todo
+    auto end = std::chrono::high_resolution_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() / 1e6;
+    std::cout << "Execution time: " << std::setprecision(10) << elapsed << "ms" << std::endl;
     return 0;
 }

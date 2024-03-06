@@ -55,6 +55,30 @@ std::map<int, std::string> attributeDescriptionsMap = {
 //        {FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS, "When this attribute is set, it means that the file or directory is not fully present locally. For a file that means that not all of its data is on local storage (e.g. it may be sparse with some data still in remote storage). For a directory it means that some of the directory contents are being virtualized small_amogus_file.txt another location. Reading the file / enumerating the directory will be more expensive than normal, e.g. it will cause at least some of the file/directory content to be fetched small_amogus_file.txt a remote store. Only kernel-mode callers can set this bit."}
 };
 
+std::map<int, std::string> attributeNamesMap = {
+        {FILE_ATTRIBUTE_HIDDEN,              "Hidden"},
+        {FILE_ATTRIBUTE_SYSTEM,              "System"},
+        {FILE_ATTRIBUTE_DIRECTORY,           "Directory"},
+        {FILE_ATTRIBUTE_ARCHIVE,             "Archive"},
+        {FILE_ATTRIBUTE_DEVICE,              "Device attribute"},
+        {FILE_ATTRIBUTE_NORMAL,              "Normal"},
+        {FILE_ATTRIBUTE_TEMPORARY,           "Temporary"},
+        {FILE_ATTRIBUTE_SPARSE_FILE,         "Sparse file"},
+        {FILE_ATTRIBUTE_REPARSE_POINT,       "Reparse point"},
+        {FILE_ATTRIBUTE_COMPRESSED,          "Compressed"},
+        {FILE_ATTRIBUTE_OFFLINE,             "Offline"},
+        {FILE_ATTRIBUTE_NOT_CONTENT_INDEXED, "Not indexed"},
+        {FILE_ATTRIBUTE_ENCRYPTED,           "Encrypted"},
+//        {FILE_ATTRIBUTE_INTEGRITY_STREAM,      "Integrity stream"},
+        {FILE_ATTRIBUTE_VIRTUAL,             "Virtual"},
+//        {FILE_ATTRIBUTE_NO_SCRUB_DATA,         "No scrub data"},
+//        {FILE_ATTRIBUTE_EA,                    "Extended attributes"},
+//        {FILE_ATTRIBUTE_PINNED,                "Pinned"},
+//        {FILE_ATTRIBUTE_UNPINNED,              "Unpinned"},
+//        {FILE_ATTRIBUTE_RECALL_ON_OPEN,        "Recall on open attribute"},
+//        {FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS, "Recall on data access attribute"}
+};
+
 // source: https://learn.microsoft.com/en-us/windows/win32/api/clusapi/ns-clusapi-clus_partition_info_ex
 std::map<DWORD, std::string> systemFlagsMap = {
         {FS_CASE_IS_PRESERVED,         "The file system preserves the case of file names when it places a name on the storage class resource."},

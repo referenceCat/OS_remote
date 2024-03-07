@@ -19,6 +19,7 @@ int fileDescriptorTo;
 unsigned long long fileSize;
 unsigned blockSize;
 aio_operation* operations;
+int operationsN = 0;
 int workingOperations = 0;
 bool initFinished = false;
 
@@ -28,16 +29,16 @@ void aio_completion_handler(sigval_t sigval) {
 
     if (aio_op->isWriteOperation) {
         aio_op->controlBlock.aio_fildes = fileDescriptorTo;
-        if (aio_op->controlBlock.aio_offset + aio_op->controlBlock.aio_nbytes > fileSize) aio_op->controlBlock.aio_nbytes = fileSize - aio_op->controlBlock.aio_offset;
-        aio_write(&aio_op->controlBlock);
-    } else {
-        aio_op->controlBlock.aio_offset += aio_op->controlBlock.aio_nbytes;
-        if (aio_op->controlBlock.aio_offset >= fileSize && initFinished) {
+        if (aio_op->controlBlock.aio_offset + aio_op->controlBlock.aio_nbytes > fileSize) {
+            aio_op->controlBlock.aio_nbytes = fileSize - aio_op->controlBlock.aio_offset;
             delete aio_op->buffer;
             aio_op->done = true;
             workingOperations--;
             // if (workingOperations == 0) raise(SIGINT);
-        } else {
+        }
+        aio_write(&aio_op->controlBlock);
+    } else {
+        aio_op->controlBlock.aio_offset += aio_op->controlBlock.aio_nbytes * operationsN; {
             aio_op->controlBlock.aio_fildes = fileDescriptorFrom;
             aio_read(&aio_op->controlBlock);
         }
@@ -55,6 +56,7 @@ void initCopy(std::string pathFrom, std::string pathTo, int operationsNumber = 1
     fileSize = statBuffer.st_size;
     blockSize = statBuffer.st_blksize * blockSizeMultiplayer;
     operations = new aio_operation[operationsNumber];
+    operationsN = operationsNumber;
     // workingOperations = operationsNumber;
 
     for (int i = 0; i < operationsNumber; i++) {
@@ -66,9 +68,9 @@ void initCopy(std::string pathFrom, std::string pathTo, int operationsNumber = 1
         operations[i].controlBlock.aio_buf = operations[i].buffer;
         operations[i].controlBlock.aio_nbytes = blockSize;
         operations[i].controlBlock.aio_offset = i * blockSize;
-        if (operations[i].controlBlock.aio_offset > fileSize) {
-            break; // stops creating new operations if existent are enough
-        }
+//        if (operations[i].controlBlock.aio_offset > fileSize) {
+//            break; // stops creating new operations if existent are enough
+//        }
         operations[i].controlBlock.aio_sigevent.sigev_notify = SIGEV_THREAD;
         operations[i].controlBlock.aio_sigevent.sigev_notify_function = aio_completion_handler;
         operations[i].controlBlock.aio_sigevent.sigev_value.sival_ptr = &operations[i];

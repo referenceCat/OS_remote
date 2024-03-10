@@ -26,8 +26,11 @@ bool initFinished = false;
 void aio_completion_handler(sigval_t sigval) {
     auto *aio_op = (struct aio_operation *)sigval.sival_ptr;
     if (aio_op->done) return;
-
-    if (aio_op->isWriteOperation) {
+    if (aio_op->controlBlock.aio_offset >= fileSize) {
+        delete aio_op->buffer;
+        aio_op->done = true;
+        workingOperations--;
+    } else if (aio_op->isWriteOperation) {
         aio_op->controlBlock.aio_fildes = fileDescriptorTo;
         if (aio_op->controlBlock.aio_offset + aio_op->controlBlock.aio_nbytes > fileSize) {
             aio_op->controlBlock.aio_nbytes = fileSize - aio_op->controlBlock.aio_offset;
@@ -36,11 +39,6 @@ void aio_completion_handler(sigval_t sigval) {
         }
         aio_write(&aio_op->controlBlock);
     } else {
-        if (aio_op->controlBlock.aio_offset >= fileSize) {
-            delete aio_op->buffer;
-            aio_op->done = true;
-            workingOperations--;
-        }
         aio_op->controlBlock.aio_offset += aio_op->controlBlock.aio_nbytes * operationsN; {
             aio_op->controlBlock.aio_fildes = fileDescriptorFrom;
             aio_read(&aio_op->controlBlock);

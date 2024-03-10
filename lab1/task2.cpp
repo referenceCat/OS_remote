@@ -31,13 +31,16 @@ void aio_completion_handler(sigval_t sigval) {
         aio_op->controlBlock.aio_fildes = fileDescriptorTo;
         if (aio_op->controlBlock.aio_offset + aio_op->controlBlock.aio_nbytes > fileSize) {
             aio_op->controlBlock.aio_nbytes = fileSize - aio_op->controlBlock.aio_offset;
-            delete aio_op->buffer;
-            aio_op->done = true;
-            workingOperations--;
+
             // if (workingOperations == 0) raise(SIGINT);
         }
         aio_write(&aio_op->controlBlock);
     } else {
+        if (aio_op->controlBlock.aio_offset >= fileSize) {
+            delete aio_op->buffer;
+            aio_op->done = true;
+            workingOperations--;
+        }
         aio_op->controlBlock.aio_offset += aio_op->controlBlock.aio_nbytes * operationsN; {
             aio_op->controlBlock.aio_fildes = fileDescriptorFrom;
             aio_read(&aio_op->controlBlock);

@@ -70,7 +70,7 @@ int main() {
     for (auto threadsN: tests) {
         std::cout << "threads: " << threadsN;
         auto t1 = std::chrono::high_resolution_clock::now( );
-        std::cout << " result: " << std::setprecision(20) << calculatePi(threadsN);
+        std::cout << " result: " << std::setprecision(10) << calculatePi(threadsN);
         auto t2 = std::chrono::high_resolution_clock::now( );
         auto dt = duration_cast<std::chrono::duration<double,std::micro>>(t2-t1).count( );
         std::cout << " time: " << round(dt) << std::endl;

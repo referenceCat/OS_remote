@@ -21,7 +21,7 @@ int main() {
     do {
         std::cout
                 << " Choose option: \n"
-                << " 1) perform projection\n"
+                << " 1) get mapped file\n"
                 << " 2) read data\n"
                 << " 3) exit\n";
         std::cin >> menu_option;
@@ -64,7 +64,7 @@ int main() {
                 printf("Exiting program.\n");
                 break;
             default:
-                printf("Invalid menu_option, please try again.\n");
+                printf("Invalid input, please try again.\n");
         }
     } while (menu_option != 3);
     return 0;

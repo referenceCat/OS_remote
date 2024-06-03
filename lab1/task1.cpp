@@ -9,7 +9,7 @@
 #include "task1.h"
 #include "iostream"
 
-#define SEPARATOR(); std::cout << "-------MAIN--MENU---------------------------------------------------" << std::endl;
+#define SEPARATOR(); std::cout << "----------------------------------------------------------" << std::endl;
 #define NEW_LINE(); std::cout << std::endl;
 #define DRIVES_NAMES_BUFFER_SIZE 1000
 #define DRIVES_NAMES_MAX 100
@@ -168,7 +168,7 @@ void drivesInfo() {
 
     if (option == 0) return;
 
-    while (option - 1 > counter) {
+    while (option > counter) {
         std::cout << "Wrong input. Try again: " << std::endl;
         std::cin >> option;
     }
@@ -280,12 +280,8 @@ void fileAttributes() {
 
     for (auto attribute: allAttributes) {
         if (mask & attribute) {
-            attributesDescriptions.push_back(attributeDescriptionsMap.at(attribute));
+            std::cout << attributeNamesMap.at(attribute) << " - " << attributeDescriptionsMap.at(attribute);
         }
-    }
-
-    for (auto &description: attributesDescriptions) {
-        std::cout << description << std::endl;
     }
 
     NEW_LINE();
@@ -297,7 +293,7 @@ void fileAttributes() {
 
     int counter = 1;
     for (auto attribute: allAttributes) {
-        std::cout << counter++ << ". " << attributeDescriptionsMap.at(attribute) << std::endl;
+        std::cout << counter++ << ". " << attributeNamesMap.at(attribute) << std::endl;
     }
 
     NEW_LINE();
@@ -399,7 +395,8 @@ void fileTime() {
 };
 
 int mainMenu() {
-    NEW_LINE();SEPARATOR();
+    NEW_LINE();
+    SEPARATOR();
     std::cout << "Options: " << std::endl;
     std::cout << "0. Quit" << std::endl;
     std::cout << "1. Data drives info" << std::endl;
@@ -410,7 +407,7 @@ int mainMenu() {
     std::cout << "6. Move file" << std::endl;
     std::cout << "7. File attributes" << std::endl;
     std::cout << "8. File time" << std::endl;
-
+    SEPARATOR();
     NEW_LINE();
     std::cout << "Choose option: ";
 
@@ -460,19 +457,9 @@ int mainMenu() {
     return 1;
 }
 
-void logo() {
-    NEW_LINE();NEW_LINE();
-    std::cout << R"( ___       ________  ________     )" << std::endl;
-    std::cout << R"(|\  \     |\   __  \|\   __  \    )" << std::endl;
-    std::cout << R"(\ \  \    \ \  \|\  \ \  \|\ /_   )" << std::endl;
-    std::cout << R"( \ \  \    \ \   __  \ \   __  \  )" << std::endl;
-    std::cout << R"(  \ \  \____\ \  \ \  \ \  \|\  \ )" << std::endl;
-    std::cout << R"(   \ \_______\ \__\ \__\ \_______\)" << std::endl;
-    std::cout << R"(    \|_______|\|__|\|__|\|_______|)" << std::endl;NEW_LINE();NEW_LINE();
-}
 
 int main() {
-    logo();
+    NEW_LINE();
     while (mainMenu());
     return 0;
 }

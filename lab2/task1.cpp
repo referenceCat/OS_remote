@@ -10,6 +10,8 @@
 #include <vector>
 #include <conio.h>
 
+#define WRONG_SYMBOL "Wrong input."
+
 using namespace std;
 
 
@@ -193,54 +195,19 @@ void determineSiteCondition() {
     }
 }
 
-void reserveVirtualMemory() {
+void reserveAndUseVirtualMemory(bool use) {
     LPVOID lpAddress;
     SIZE_T dwSize;
     char choose;
 
-    std::cout << "Enter size of memory region to reserve (in bytes): ";
-    std::cin >> dwSize;
+        std::cout << "Enter size of memory region to reserve (in bytes): ";
+        std::cin >> dwSize;
+
 
     std::cout << "Manual allocation? y/n: ";
     std::cin >> choose;
 
     if (choose == 'y') {
-        std::cout << "Enter memory address to reserve: ";
-        std::cin >> std::hex >> lpAddress;
-        LPVOID lpMemory = VirtualAlloc(lpAddress, dwSize, MEM_RESERVE, PAGE_READWRITE);
-        if (lpMemory == nullptr) {
-            std::cerr << "Failed to allocate memory region." << std::endl;
-            return;
-        }
-
-        std::cout << "Memory region allocated at address: " << lpMemory << std::endl;
-        VirtualFree(lpMemory, 0, MEM_DECOMMIT);
-    } else if (choose == 'n') {
-        LPVOID lpMemory = VirtualAlloc(nullptr, dwSize, MEM_RESERVE, PAGE_READWRITE);
-        if (lpMemory == nullptr) {
-            std::cerr << "Failed to allocate memory region." << std::endl;
-            return;
-        }
-
-        std::cout << "Memory region allocated at address: " << lpMemory << std::endl;
-        VirtualFree(lpMemory, 0, MEM_DECOMMIT);
-    } else {
-        std::cerr << "wrong symbol" << std::endl;
-    }
-}
-
-void reserveAndUseVirtualMemory() {
-    LPVOID lpAddress;
-    SIZE_T dwSize;
-    char choose;
-
-    std::cout << "Enter size of memory region to reserve (in bytes): ";
-    std::cin >> dwSize;
-
-    std::cout << "Manual allocation? y/n: ";
-    std::cin >> choose;
-
-    if (choose == 'y' || choose == 'Y') {
         std::cout << "Enter memory address to reserve: ";
         std::cin >> std::hex >> lpAddress;
         LPVOID lpMemory = VirtualAlloc(lpAddress, dwSize, MEM_COMMIT, PAGE_READWRITE);
@@ -250,8 +217,9 @@ void reserveAndUseVirtualMemory() {
         }
 
         std::cout << "Memory region allocated at address: " << lpMemory << std::endl;
-//        VirtualFree(lpMemory, 0, MEM_RELEASE);
-    } else if (choose == 'n' || choose == 'N') {
+        if (!use)
+        VirtualFree(lpMemory, 0, MEM_RELEASE);
+    } else if (choose == 'n') {
         LPVOID lpMemory = VirtualAlloc(nullptr, dwSize, MEM_COMMIT, PAGE_READWRITE);
         if (lpMemory == nullptr) {
             std::cerr << "Failed to allocate memory region." << std::endl;
@@ -259,9 +227,10 @@ void reserveAndUseVirtualMemory() {
         }
 
         std::cout << "Memory region allocated at address: " << lpMemory << std::endl;
-//        VirtualFree(lpMemory, 0, MEM_RELEASE);
+        if (!use)
+        VirtualFree(lpMemory, 0, MEM_RELEASE);
     } else {
-        std::cerr << "wrong symbol" << std::endl;
+        std::cerr << WRONG_SYMBOL << std::endl;
     }
 }
 
@@ -312,10 +281,6 @@ void writeData() {
     }
 
     CloseHandle(hProcess);
-    cout<<"Do you want to read written data? (y/n): ";
-    char choose;
-    std::cin >> choose;
-    if (choose =='y') readData();
 }
 
 void setProtect() {
@@ -392,6 +357,7 @@ int main() {
                 << " 6) write data\n"
                 << " 7) set protect\n"
                 << " 8) free mem\n" << std::endl;
+
         std::cin >> menu_option;
         switch (menu_option) {
             case 1:
@@ -407,11 +373,11 @@ int main() {
                 getch();
                 break;
             case 4:
-                reserveVirtualMemory();
+                reserveAndUseVirtualMemory(false);
                 getch();
                 break;
             case 5:
-                reserveAndUseVirtualMemory();
+                reserveAndUseVirtualMemory(true);
                 getch();
                 break;
             case 6:
@@ -426,8 +392,12 @@ int main() {
                 freeMemory();
                 getch();
                 break;
+            case 9:
+                readData();
+                getch();
+                break;
             default:
-                std::cout << "Wrong input. Try again" << std::endl;
+                std::cout << WRONG_SYMBOL << std::endl;
                 break;
         }
         system("cls");

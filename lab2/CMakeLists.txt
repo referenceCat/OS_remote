@@ -1,2 +1,3 @@
 add_executable(lab2_task2_server task_2_server_side.cpp)
 add_executable(lab2_task2_client task_2_client_side.cpp)
+add_executable(lab2_task1 task1.cpp)

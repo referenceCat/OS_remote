@@ -35,7 +35,7 @@ int main() {
 
 
                 if (fstat(file, &file_stats) == -1) {
-                    perror("Errorint &file, char **pointer_to_mapped_file getting file size");
+                    perror("Error getting file size");
                     close(file);
                     exit(1);
                 }

@@ -27,11 +27,7 @@ DWORD WINAPI threadJob(LPVOID threadData) {
         ReleaseMutex(iterationMutex);
         long double blockResult = 0;
         for (int i = from; i < to; i++) {
-            long double x = i + 0.5;
-            x /= N;
-            x *= x;
-            x = 1 / (x + 1);
-            blockResult += x;
+            blockResult += 1 / ((((double)i + 0.5) / N) * (((double)i + 0.5) / N) + 1);
         }
         WaitForSingleObject(resultAccessMutex, INFINITE);
         result += blockResult;

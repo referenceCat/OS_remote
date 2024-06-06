@@ -1,76 +1,79 @@
-//
-// Created by referenceCat on 06.06.2024.
-//
-
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <windows.h>
-
-const int PAGE_SIZE = 4096;       // Размер страницы в байтах (обычно 4KB)
-const int STUDENT_NUMBER_SUM = 14;//  Cумма цифр студака
-const int NUM_PAGES = STUDENT_NUMBER_SUM;
-
-const char *FILE_MAPPING_NAME = "SharedMemoryFile.txt";
-const char *SEMAPHORE_NAME = "BufferSemaphore";
+#include "utils.h"
 
 
-void LogEvent(const std::string &filename, const std::string &event) {
-    std::ofstream logFile(filename, std::ios::app);
-    if (logFile.is_open()) {
-        DWORD time = timeGetTime();
-        logFile << time << ": " << event << std::endl;
-        logFile.close();
+// Function to open a semaphore with error handling
+HANDLE OpenSemaphoreWithErrorCheck(DWORD accessMode, BOOL inheritHandle, const std::string& semaphoreName) {
+    HANDLE semaphore = OpenSemaphore(accessMode, inheritHandle, semaphoreName.c_str());
+    if (semaphore == nullptr) {
+        std::cerr << "Error opening semaphore: " << semaphoreName << std::endl;
+        ExitProcess(1);
     }
+    return semaphore;
 }
 
+int main() {
+    srand(time(nullptr));
 
-void Reader(int readerId) {
-    std::string logFilename = "Reader" + std::to_string(readerId) + ".log";
+    // Open handles to semaphores and mutex
+    HANDLE writeSemaphores[numberOfPages], readSemaphores[numberOfPages];
+    HANDLE ioMutex = OpenMutex(
+            MUTEX_MODIFY_STATE | SYNCHRONIZE,
+            false,
+            mutexName.c_str());
+    HANDLE mappedFile = OpenFileMapping(
+            GENERIC_READ,
+            false,
+            mapName.c_str());
 
-    // Открытие семафора и мьютекса
-    HANDLE hSemaphore = OpenSemaphore(SEMAPHORE_ALL_ACCESS, FALSE, SEMAPHORE_NAME);
+    // Open handles to standard output and semaphores
+    HANDLE stdOutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    for (int i = 0; i < numberOfPages; i++) {
+        writeSemaphores[i] = OpenSemaphoreWithErrorCheck(SEMAPHORE_MODIFY_STATE | SYNCHRONIZE,
+                                                         FALSE,
+                                                         std::to_string(i));
 
-    // Открытие проецируемого файла
-    HANDLE hMapFile = OpenFileMapping(FILE_MAP_READ, FALSE, FILE_MAPPING_NAME);
-    LPVOID pBuf = MapViewOfFile(hMapFile, FILE_MAP_READ, 0, 0, NUM_PAGES * PAGE_SIZE);
-
-    while (true) {
-        LogEvent(logFilename, "Waiting");
-
-        // Ожидание семафора
-        WaitForSingleObject(hSemaphore, INFINITE);
-
-        LogEvent(logFilename, "Reading");
-
-        // Чтение данных (пример)
-        for (int i = 0; i < NUM_PAGES; i++) {
-            char* page = (char*)pBuf + i * PAGE_SIZE;
-            // Пример чтения: вывод первого байта страницы
-            std::cout << "Reader " << readerId << " read page " << i << ": " << page[0] << std::endl;
-            LogEvent(logFilename, "Read page " + std::to_string(i));
-        }
-
-
-        // Освобождение семафора
-        ReleaseSemaphore(hSemaphore, 1, NULL);
-        LogEvent(logFilename, "Released");
-        // Задержка
-        Sleep(500 + rand() % 1001); // От 0.5 до 1.5 сек.
+        readSemaphores[i] = OpenSemaphoreWithErrorCheck(SEMAPHORE_MODIFY_STATE | SYNCHRONIZE,
+                                                        FALSE,
+                                                        std::to_string(i + numberOfPages));
     }
 
-    UnmapViewOfFile(pBuf);
-    CloseHandle(hMapFile);
-    CloseHandle(hSemaphore);
-}
+    // Perform read operations
+    for (int i = 0; i < 3; i++) {
+        LogWrite("Wait | Semaphore | " + std::to_string(GetTickCount()) + "\n");
 
-int main(int argc, char* argv[]) {
-    if (argc!= 2) {
-        std::cout << "Usage: " << argv[0] << " <readerId>" << std::endl;
-        return 1;
+        // Wait for any available page
+        DWORD page = WaitForMultipleObjects(
+                numberOfPages,
+                readSemaphores,
+                FALSE,
+                INFINITE);
+        LogWrite("Take | Semaphore | " + std::to_string(GetTickCount()) + "\n");
+
+        // Wait for the I/O mutex
+        WaitForSingleObject(
+                ioMutex,
+                INFINITE);
+        LogWrite("Take | Mutex | " + std::to_string(GetTickCount()) + "\n");
+
+        Sleep(500 + rand() % 1000);
+        LogWrite("Read | Page: " + std::to_string(page) + " | " + std::to_string(GetTickCount()) + "\n");
+
+        // Release the I/O mutex
+        ReleaseMutex(ioMutex);
+        LogWrite("Free | Mutex | " + std::to_string(GetTickCount()) + "\n");
+
+        // Release the write semaphore for the read page
+        ReleaseSemaphore(writeSemaphores[page], 1, nullptr);
+        LogWrite("Free | Semaphore | " + std::to_string(GetTickCount()) + "\n\n");
     }
-    srand(GetTickCount());
-    int readerId = std::atoi(argv[1]); // Уникальный идентификатор читателя
-    Reader(readerId);
+
+    // Close handles
+    for (int i = 0; i < numberOfPages; i++) {
+        CloseHandle(writeSemaphores[i]);
+        CloseHandle(readSemaphores[i]);
+    }
+    CloseHandle(ioMutex);
+    CloseHandle(mappedFile);
+
     return 0;
 }

@@ -1,4 +1,6 @@
 #include "utils.h"
+#include <chrono>
+#include <thread>
 
 
 HANDLE CreateNewProcess(const std::string&, const std::string&);
@@ -53,13 +55,11 @@ int main() {
 
     // Create writer and reader processes
     for (int i = 0; i < numberOfWriters; i++) {
-        std::string logName = R"(C:\Users\referenceCat\CLionProjects\OS\lab4\task1_logs\writeLog_)" + std::to_string(i) + ".txt";
-        writers[i] = CreateNewProcess("lab4_task1_writer.exe", logName);
+        writers[i] = CreateNewProcess("lab4_task1_writer.exe",  std::to_string(i));
     }
 
     for (int i = 0; i < numberOfReaders; i++) {
-        std::string logName = R"(C:\Users\referenceCat\CLionProjects\OS\lab4\task1_logs\readLog_)" + std::to_string(i) + ".txt";
-        readers[i] = CreateNewProcess("lab4_task1_reader.exe", logName);
+        readers[i] = CreateNewProcess("lab4_task1_reader.exe",  std::to_string(i));
     }
 
      WaitForMultipleObjects(

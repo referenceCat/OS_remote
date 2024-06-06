@@ -11,10 +11,10 @@ HANDLE OpenSemaphoreWithErrorCheck(DWORD accessMode, BOOL inheritHandle, const s
     return semaphore;
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     srand(time(nullptr));
+    int id = strtol(argv[1], nullptr, 10);
 
-    // Open handles to semaphores and mutex
     HANDLE writeSemaphores[numberOfPages], readSemaphores[numberOfPages];
     HANDLE ioMutex = OpenMutex(
             MUTEX_MODIFY_STATE | SYNCHRONIZE,
@@ -24,9 +24,8 @@ int main() {
             GENERIC_READ,
             false,
             mapName.c_str());
+    LPVOID pointerToMappedContent = MapViewOfFile(mappedFile, FILE_MAP_WRITE, 0, 0, pageSize * numberOfPages);
 
-    // Open handles to standard output and semaphores
-    HANDLE stdOutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
     for (int i = 0; i < numberOfPages; i++) {
         writeSemaphores[i] = OpenSemaphoreWithErrorCheck(SEMAPHORE_MODIFY_STATE | SYNCHRONIZE,
                                                          FALSE,
@@ -37,37 +36,29 @@ int main() {
                                                         std::to_string(i + numberOfPages));
     }
 
-    // Perform read operations
     for (int i = 0; i < 3; i++) {
-        LogWrite("Wait | Semaphore | " + std::to_string(GetTickCount()) + "\n");
-
-        // Wait for any available page
-        DWORD page = WaitForMultipleObjects(
+        logProcessEvent(id, true, WAITING);
+        DWORD pageNumber = WaitForMultipleObjects(
                 numberOfPages,
                 readSemaphores,
                 FALSE,
                 INFINITE);
-        LogWrite("Take | Semaphore | " + std::to_string(GetTickCount()) + "\n");
-
-        // Wait for the I/O mutex
         WaitForSingleObject(
                 ioMutex,
                 INFINITE);
-        LogWrite("Take | Mutex | " + std::to_string(GetTickCount()) + "\n");
 
-        Sleep(500 + rand() % 1000);
-        LogWrite("Read | Page: " + std::to_string(page) + " | " + std::to_string(GetTickCount()) + "\n");
+        logProcessEvent(id, true, RW_OPERATION, pageNumber);
+        VirtualLock((char*)pointerToMappedContent + pageSize * pageNumber, pageSize);
+        Sleep(rwDelay_ms + rand() % rwDelayDiv_ms);
+        VirtualLock((char*)pointerToMappedContent + pageSize * pageNumber, pageSize);
 
-        // Release the I/O mutex
         ReleaseMutex(ioMutex);
-        LogWrite("Free | Mutex | " + std::to_string(GetTickCount()) + "\n");
+        ReleaseSemaphore(writeSemaphores[pageNumber], 1, nullptr);
 
-        // Release the write semaphore for the read page
-        ReleaseSemaphore(writeSemaphores[page], 1, nullptr);
-        LogWrite("Free | Semaphore | " + std::to_string(GetTickCount()) + "\n\n");
+        logProcessEvent(id, true, REALISED);
+
     }
 
-    // Close handles
     for (int i = 0; i < numberOfPages; i++) {
         CloseHandle(writeSemaphores[i]);
         CloseHandle(readSemaphores[i]);

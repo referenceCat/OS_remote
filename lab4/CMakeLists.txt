@@ -1,0 +1,4 @@
+add_executable(lab4_task1_reader task1_reader.cpp)
+add_executable(lab4_task1_writer task1_writer.cpp)
+add_executable(lab4_task2_server task2_server.cpp)
+add_executable(lab4_task2_client task2_client.cpp)
